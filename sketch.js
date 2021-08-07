@@ -1,5 +1,3 @@
-var myV;
-var angle;
 var myClock;
 
 function setup() {
@@ -12,3 +10,8 @@ function draw() {
   // Put drawings here
   myClock.draw();
 }
+
+// This Redraws the Canvas when resized
+windowResized = function() {
+  resizeCanvas(windowWidth, windowHeight);
+};

@@ -1,15 +1,31 @@
-function Clock() {
+// DL: TODO - use vector mathematics to remove the need for the translate function
+// thereby allowing for multiple clocks. 
+// DL: TODO - add further clock numbers and face effects. Us the mag function and 
+// pythangoras theorem to deduce the x an dy coordinates for each number.
 
+function Clock() {
+    var dscale;
     var dHour;
     var dMinute;
     var dSecond;
+    var dDiameter;
+    var dmyPi;
+    var dRotateSpeedChoices;
+    var dRotateSpeed;
+    var numberEdgeDistance; // DL: Clock number distrance from edge
+    var rx, ry; // random x and y values for translate function
+    var dx, dy; // random deltaX and Y values for clock face movement
+    var directionChanged;
+    var clockFaceColour;
 
     this.setup = function() {
+
+        dscale = 30;
 
         dHour = {
             start: ((hour() % 12) + minute() / 60)  / 12 * TWO_PI,
             vect: createVector(1,1),
-            scale: 30,
+            scale: dscale / 2,
             angle: TWO_PI / 12660000,
             colour: color(100,220,80),
             weight: 4
@@ -18,7 +34,7 @@ function Clock() {
         dMinute = {
             start: ( minute() + second() / 60 ) / 60 * TWO_PI,
             vect: createVector(1,1),
-            scale: 55,
+            scale: dscale * 0.9,
             angle: TWO_PI / 216000,
             colour: color(200,200,50),
             weight: 2
@@ -27,12 +43,12 @@ function Clock() {
         dSecond = {
             start: second() / 60 * TWO_PI,
             vect: createVector(1,1),
-            scale: 60,
+            scale: dscale,
             angle: TWO_PI / 3600,
             colour: color(200,50,50,50),
             weight: 1
         };
-
+        
         dHour.vect.normalize();
         dMinute.vect.normalize();
         dSecond.vect.normalize();
@@ -42,18 +58,34 @@ function Clock() {
         dHour.vect.setHeading(dHour.start);
         dMinute.vect.setHeading(dMinute.start);
         dSecond.vect.setHeading(dSecond.start);
-
+        dDiameter = dscale * 2.2;
+        dmyPi = random(- PI / 2, PI / 2);
+        dRotateSpeedChoices = [-PI/500, - PI / 300, PI / 300, PI / 500];
+        dRotateSpeed = random(dRotateSpeedChoices);
+        numberEdgeDistance = 7;
+        rx = random(width);
+        ry = random(height);
+        dx = random(-1, 1);
+        dy = random(-1, 1);
+        clockFaceColour = color(250);
+        directionChanged = false;
     };
 
     this.draw = function() {
         // Put drawings here
+        var twidth =  0;
+        var theight = 0;
         background(100);
         push();
-        translate(width / 2, height / 2);
-        rotate(- PI / 2); // DL: Starts 0 ( and 2PI radians at 12:00)
-        fill(250);
+        translate(rx, ry);
+        rotate(dmyPi); // DL: Starts 0 ( and 2PI radians at 12:00)
         noStroke();
-        ellipse(0, 0, dSecond.vect.mag() * 2.2);
+        if (directionChanged) {
+            clockFaceColour = color(random(255), random(255), random(255), random(255));
+            directionChanged = false;
+        }
+        fill(clockFaceColour);
+        ellipse(0, 0, dDiameter);
         // DL: Drawhour
         stroke(dHour.colour);
         strokeWeight(dHour.weight);
@@ -72,6 +104,42 @@ function Clock() {
         line(0,0, dSecond.vect.x, dSecond.vect.y);
         dSecond.vect.x = dSecond.vect.x * cos(dSecond.angle) - dSecond.vect.y * sin(dSecond.angle);
         dSecond.vect.y = dSecond.vect.x * sin(dSecond.angle) + dSecond.vect.y * cos(dSecond.angle);
+        
+        // DL: Add clock numbers
+        fill(0);
+        push();
+        rotate(PI/2);
+        textSize(10);
+        textAlign(CENTER, CENTER);
+        text(12, 0, - dDiameter / 2 + numberEdgeDistance);
+        text(6, 0, dDiameter / 2 - numberEdgeDistance);
+        text(9, - dDiameter / 2 + numberEdgeDistance, 0);
+        text(3, dDiameter / 2 - numberEdgeDistance, 0);
+        pop();
+        // DL: Spin Clock
+        dmyPi -= dRotateSpeed;
+        // DL: Move Clock
+        rx += dx;
+        ry += dy;
+
+        twidth = width - rx;
+        theight = height - ry;
+
+        // DL: Check if clock hits the canvas boundary, causing 
+        // rebound and changing its colour using directionChanged to 
+        // trigger the change in fill using a global object variable
+        // clockFaceColour(color)
+
+        if (-dDiameter / 2 < -rx || dDiameter / 2 > twidth) {
+            dx *= -1;
+            directionChanged = true;
+        }
+
+        if (-dDiameter / 2 < -ry || dDiameter / 2 > theight) {
+            dy *= -1;
+            directionChanged = true;
+        }
+
         pop();
     };
 
